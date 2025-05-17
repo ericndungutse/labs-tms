@@ -1,4 +1,4 @@
-package Utils;
+package com.ndungutse.tms.Utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

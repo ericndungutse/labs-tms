@@ -1,26 +1,25 @@
-package model;
+package com.ndungutse.tms.dot;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-public class Task {
+public class TaskDTO {
         private UUID id;
         private String title;
         private String description;
         private LocalDate dueDate;
         private String status; // "Pending" or "Completed"
 
-    public Task() {
+    public TaskDTO() {}
 
-    }
-
-    public Task(String title, String description, LocalDate dueDate, String status) {
+    public TaskDTO(String title, String description, LocalDate dueDate, String status) {
             this.title = title;
             this.description = description;
             this.dueDate = dueDate;
             this.status = status;
         }
-  public Task(UUID id, String title, String description, LocalDate dueDate, String status) {
+
+  public TaskDTO(UUID id, String title, String description, LocalDate dueDate, String status) {
             this.id = id;
             this.title = title;
             this.description = description;

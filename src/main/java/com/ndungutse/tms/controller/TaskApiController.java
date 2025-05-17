@@ -1,18 +1,15 @@
-package controller;
+package com.ndungutse.tms.controller;
 
 import java.io.*;
-import java.sql.*;
-import java.util.UUID;
+import java.util.List;
 
-import Utils.DBUtil;
-import Utils.TaskJsonMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ndungutse.tms.Utils.TaskJsonMapper;
+import com.ndungutse.tms.dot.AllTasksResponse;
+import com.ndungutse.tms.dot.TaskDTO;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
-import model.Task;
-import repository.TaskRepository;
-import service.TaskService;
+import com.ndungutse.tms.repository.TaskRepository;
+import com.ndungutse.tms.service.TaskService;
 
 @WebServlet(name = "TaskApi", value = "/api/v1/tasks")
 public class TaskApiController extends HttpServlet {
@@ -22,16 +19,17 @@ public class TaskApiController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("application/json");
-        try(
-                Connection dbConection = DBUtil.getConnection();
-                ) {
+        try {
+            List<TaskDTO> taskDTOS = taskService.getAllTasks();
 
-            System.out.println("************************************" + request.getMethod());
+            AllTasksResponse responseObj = new AllTasksResponse(new AllTasksResponse.Data(taskDTOS), "success");
+            String jsonResponse = TaskJsonMapper.toJsonFromResponse(responseObj);
 
-        response.getWriter().write("{ \"message\": \"Fetching all tasks\" }");
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            response.setContentType("application/json");
+            response.getWriter().write(jsonResponse);
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
         }
     }
 
@@ -46,11 +44,11 @@ public class TaskApiController extends HttpServlet {
                 sb.append(line);
             }
             String json = sb.toString();
-            Task newTask = taskService.createTask(TaskJsonMapper.fromJson(json));
+            TaskDTO newTaskDTO = taskService.createTask(TaskJsonMapper.fromJson(json));
 
             response.setContentType("application/json");
             response.setStatus(HttpServletResponse.SC_CREATED);
-            response.getWriter().write(TaskJsonMapper.toJson(newTask));
+            response.getWriter().write(TaskJsonMapper.toJson(newTaskDTO));
 
         } catch (Exception e) {
             e.printStackTrace();
