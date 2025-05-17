@@ -20,6 +20,14 @@ public class Task {
             this.dueDate = dueDate;
             this.status = status;
         }
+  public Task(UUID id, String title, String description, LocalDate dueDate, String status) {
+            this.id = id;
+            this.title = title;
+            this.description = description;
+            this.dueDate = dueDate;
+            this.status = status;
+        }
+
 
     public String getTitle() {
         return title;
