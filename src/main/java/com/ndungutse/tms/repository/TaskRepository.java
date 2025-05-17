@@ -41,23 +41,35 @@ public class TaskRepository {
     }
 
     // Get All Tasks
-    public List<TaskDTO> findAll() throws SQLException, ClassNotFoundException {
-        String sql = "SELECT id, title, description, dueDate, status FROM tasks";
+    public List<TaskDTO> findAll(String status) throws SQLException, ClassNotFoundException {
         List<TaskDTO> taskDTOS = new ArrayList<>();
+        boolean hasFilter = status != null && !status.isEmpty();
+
+        String sql = "SELECT id, title, description, dueDate, status FROM tasks";
+
+        if (status != null && !status.isEmpty()) {
+            sql += " WHERE LOWER(status) = LOWER(?)";
+        }
 
         try (
                 Connection conn = DBUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
-                ResultSet rs = stmt.executeQuery()
         ) {
-            while (rs.next()) {
-                TaskDTO taskDTO = new TaskDTO();
-                taskDTO.setTitle(rs.getString("title"));
-                taskDTO.setId(rs.getObject("id", UUID.class));
-                taskDTO.setDescription(rs.getString("description"));
-                taskDTO.setDueDate(rs.getDate("dueDate").toLocalDate());
-                taskDTO.setStatus(rs.getString("status"));
-                taskDTOS.add(taskDTO);
+
+            if (hasFilter) {
+                stmt.setString(1, status);
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    TaskDTO taskDTO = new TaskDTO();
+                    taskDTO.setTitle(rs.getString("title"));
+                    taskDTO.setId(rs.getObject("id", UUID.class));
+                    taskDTO.setDescription(rs.getString("description"));
+                    taskDTO.setDueDate(rs.getDate("dueDate").toLocalDate());
+                    taskDTO.setStatus(rs.getString("status"));
+                    taskDTOS.add(taskDTO);
+                }
             }
         }
         return taskDTOS;

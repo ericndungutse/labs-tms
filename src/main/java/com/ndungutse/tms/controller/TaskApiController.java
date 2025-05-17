@@ -20,7 +20,9 @@ public class TaskApiController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            List<TaskDTO> taskDTOS = taskService.getAllTasks();
+            // Get optional status parameter from query string
+            String status = request.getParameter("status") != null ? request.getParameter("status") : null;
+            List<TaskDTO> taskDTOS = taskService.getAllTasks(status);
 
             AllTasksResponse responseObj = new AllTasksResponse(new AllTasksResponse.Data(taskDTOS), "success");
             String jsonResponse = TaskJsonMapper.toJsonFromResponse(responseObj);
