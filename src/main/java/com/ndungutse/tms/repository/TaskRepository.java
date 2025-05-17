@@ -81,4 +81,18 @@ public class TaskRepository {
         }
         return taskDTOS;
     }
+
+    // Delete Task
+    public boolean deleteById(UUID id) throws SQLException, ClassNotFoundException {
+        String sql = "DELETE FROM tasks WHERE id = ?";
+        try (
+                Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+        ) {
+            stmt.setObject(1, id);
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        }
+    }
+
 }

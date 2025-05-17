@@ -2,6 +2,7 @@ package com.ndungutse.tms.controller;
 
 import java.io.*;
 import java.util.List;
+import java.util.UUID;
 
 import com.ndungutse.tms.Utils.TaskJsonMapper;
 import com.ndungutse.tms.dot.AllTasksResponse;
@@ -65,11 +66,36 @@ public class TaskApiController extends HttpServlet {
         response.getWriter().write("{ \"message\": \"Task updated\" }");
     }
 
+
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("application/json");
-        response.getWriter().write("{ \"message\": \"Task deleted\" }");
+        System.out.println("********************** Delete Here");
+        String idParam = request.getParameter("id");
+        if (idParam == null || idParam.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\":\"Missing task ID\"}");
+            return;
+        }
+
+        try {
+            UUID taskId = UUID.fromString(idParam);
+            boolean deleted = taskService.deleteTaskById(taskId);
+
+            if (deleted) {
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            } else {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("{\"error\":\"Task not found\"}");
+            }
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\":\"Invalid UUID format\"}");
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+        }
     }
+
 
     public void destroy() {
     }
