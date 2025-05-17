@@ -1,0 +1,7 @@
+model\Task.class
+controller\TaskApiController.class
+Utils\DBUtil.class
+repository\TaskRepository.class
+Utils\TaskJsonMapper.class
+service\TaskService.class
+Utils\DatabaseInitializer.class
