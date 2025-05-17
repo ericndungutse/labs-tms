@@ -5,6 +5,7 @@ import java.sql.*;
 import java.util.UUID;
 
 import Utils.DBUtil;
+import Utils.TaskJsonMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.*;
@@ -34,32 +35,22 @@ public class TaskApiController extends HttpServlet {
         }
     }
 
-    private Task taskJsonToTaskMapper(String json) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        return mapper.readValue(json, Task.class);
-    }
-
-    private String taskObjToJsonMapper(Task task) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        return mapper.writeValueAsString(task);
-    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)  {
         try(BufferedReader reader = request.getReader()) {
             StringBuilder sb = new StringBuilder();
             String line;
+
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
             }
             String json = sb.toString();
-            Task newTask = taskService.createTask(taskJsonToTaskMapper(json));
+            Task newTask = taskService.createTask(TaskJsonMapper.fromJson(json));
 
             response.setContentType("application/json");
             response.setStatus(HttpServletResponse.SC_CREATED);
-            response.getWriter().write(taskObjToJsonMapper(newTask));
+            response.getWriter().write(TaskJsonMapper.toJson(newTask));
 
         } catch (Exception e) {
             e.printStackTrace();
