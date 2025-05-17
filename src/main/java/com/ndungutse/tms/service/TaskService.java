@@ -23,7 +23,7 @@ public class TaskService {
     }
 
     // Get All Tasks
-    public List<TaskDTO> getAllTasks(String status) throws Exception {
-        return taskRepository.findAll(status);
+    public List<TaskDTO> getAllTasks(String status, String dueDateSortDirection) throws Exception {
+        return taskRepository.findAll(status, dueDateSortDirection);
     }
 }

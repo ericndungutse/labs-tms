@@ -21,8 +21,9 @@ public class TaskApiController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             // Get optional status parameter from query string
-            String status = request.getParameter("status") != null ? request.getParameter("status") : null;
-            List<TaskDTO> taskDTOS = taskService.getAllTasks(status);
+            String status = request.getParameter("status");
+            String dueDateSortDirection = request.getParameter("dueDateSortDirection");
+            List<TaskDTO> taskDTOS = taskService.getAllTasks(status, dueDateSortDirection);
 
             AllTasksResponse responseObj = new AllTasksResponse(new AllTasksResponse.Data(taskDTOS), "success");
             String jsonResponse = TaskJsonMapper.toJsonFromResponse(responseObj);

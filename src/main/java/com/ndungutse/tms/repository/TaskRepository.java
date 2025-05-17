@@ -41,15 +41,22 @@ public class TaskRepository {
     }
 
     // Get All Tasks
-    public List<TaskDTO> findAll(String status) throws SQLException, ClassNotFoundException {
+    public List<TaskDTO> findAll(String status,  String dueDateSortDirection) throws SQLException, ClassNotFoundException {
         List<TaskDTO> taskDTOS = new ArrayList<>();
         boolean hasFilter = status != null && !status.isEmpty();
 
         String sql = "SELECT id, title, description, dueDate, status FROM tasks";
 
-        if (status != null && !status.isEmpty()) {
+        if (status != null && !status.trim().isEmpty()) {
             sql += " WHERE LOWER(status) = LOWER(?)";
         }
+
+        String direction = "DESC";
+
+        if ("ASC".equalsIgnoreCase(dueDateSortDirection)) {
+            direction= "ASC";
+        }
+        sql += " ORDER BY dueDate " + direction;
 
         try (
                 Connection conn = DBUtil.getConnection();
