@@ -4,6 +4,7 @@ import com.ndungutse.tms.dot.TaskDTO;
 import com.ndungutse.tms.repository.TaskRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 public class TaskService {
     private final TaskRepository taskRepository;
@@ -25,5 +26,10 @@ public class TaskService {
     // Get All Tasks
     public List<TaskDTO> getAllTasks(String status, String dueDateSortDirection) throws Exception {
         return taskRepository.findAll(status, dueDateSortDirection);
+    }
+
+    // Delete task
+    public boolean deleteTaskById(UUID id) throws Exception {
+        return taskRepository.deleteById(id);
     }
 }
