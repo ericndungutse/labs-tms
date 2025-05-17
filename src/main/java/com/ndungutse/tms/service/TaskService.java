@@ -1,7 +1,9 @@
-package service;
+package com.ndungutse.tms.service;
 
-import model.Task;
-import repository.TaskRepository;
+import com.ndungutse.tms.dot.TaskDTO;
+import com.ndungutse.tms.repository.TaskRepository;
+
+import java.util.List;
 
 public class TaskService {
     private final TaskRepository taskRepository;
@@ -13,11 +15,15 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
-    public Task createTask(Task task) throws Exception {
-        if (task.getTitle() == null || task.getTitle().isBlank()) {
+    public TaskDTO createTask(TaskDTO taskDTO) throws Exception {
+        if (taskDTO.getTitle() == null || taskDTO.getTitle().isBlank()) {
             throw new IllegalArgumentException("Title cannot be empty");
         }
+        return taskRepository.save(taskDTO);
+    }
 
-        return taskRepository.save(task);
+    // Get All Tasks
+    public List<TaskDTO> getAllTasks(String status, String dueDateSortDirection) throws Exception {
+        return taskRepository.findAll(status, dueDateSortDirection);
     }
 }
