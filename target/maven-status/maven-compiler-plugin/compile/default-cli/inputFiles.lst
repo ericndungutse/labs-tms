@@ -1,4 +1,6 @@
-E:\Dev Env 1\amalitech\Labs\task\src\main\java\controller\TaskApi.java
+E:\Dev Env 1\amalitech\Labs\task\src\main\java\controller\TaskApiController.java
 E:\Dev Env 1\amalitech\Labs\task\src\main\java\model\Task.java
+E:\Dev Env 1\amalitech\Labs\task\src\main\java\repository\TaskRepository.java
+E:\Dev Env 1\amalitech\Labs\task\src\main\java\service\TaskService.java
 E:\Dev Env 1\amalitech\Labs\task\src\main\java\Utils\DatabaseInitializer.java
 E:\Dev Env 1\amalitech\Labs\task\src\main\java\Utils\DBUtil.java

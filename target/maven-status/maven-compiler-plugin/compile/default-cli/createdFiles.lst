@@ -1,4 +1,6 @@
 model\Task.class
+service\TaskService.class
+controller\TaskApiController.class
 Utils\DBUtil.class
+repository\TaskRepository.class
 Utils\DatabaseInitializer.class
-controller\TaskApi.class
