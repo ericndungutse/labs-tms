@@ -5,6 +5,7 @@ import com.ndungutse.tms.repository.TaskRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,7 +17,7 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
-    public TaskDTO createTask(TaskDTO taskDTO) throws Exception {
+    public TaskDTO createTask(TaskDTO taskDTO) throws SQLException, ClassNotFoundException {
         if (taskDTO.getTitle() == null || taskDTO.getTitle().isBlank()) {
             logger.warn("Attempted to create task with empty title");
             throw new IllegalArgumentException("Title cannot be empty");

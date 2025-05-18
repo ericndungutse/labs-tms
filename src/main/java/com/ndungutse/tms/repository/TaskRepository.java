@@ -47,13 +47,8 @@ public class TaskRepository {
             }
 
             return new TaskDTO(generatedId, taskDTO.getTitle(), taskDTO.getDescription(), taskDTO.getDueDate(), taskDTO.getStatus());
-
-        } catch (SQLException e) {
-            logger.error("Error saving task '{}': {}", taskDTO.getTitle(), e.getMessage());
-            throw e;
         }
     }
-
 
     // Get All Tasks
     public List<TaskDTO> findAll(String status, String dueDateSortDirection) throws SQLException, ClassNotFoundException {

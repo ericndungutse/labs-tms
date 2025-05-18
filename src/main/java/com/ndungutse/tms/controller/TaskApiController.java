@@ -1,6 +1,7 @@
 package com.ndungutse.tms.controller;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,6 +25,7 @@ public class TaskApiController extends HttpServlet {
         logger.info("TaskApiController initialized");
     }
 
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String status = request.getParameter("status");
@@ -46,7 +48,7 @@ public class TaskApiController extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try (BufferedReader reader = request.getReader()) {
             StringBuilder sb = new StringBuilder();
             String line;
@@ -65,12 +67,8 @@ public class TaskApiController extends HttpServlet {
 
         } catch (Exception e) {
             logger.error("Error processing POST request", e);
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            try {
-                response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
-            } catch (IOException ioException) {
-                logger.error("Error writing error response for POST", ioException);
-            }
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\": \"Internal server error. Please try again later.\"}");
         }
     }
 
