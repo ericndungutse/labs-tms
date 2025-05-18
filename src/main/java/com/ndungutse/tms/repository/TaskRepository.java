@@ -2,6 +2,8 @@ package com.ndungutse.tms.repository;
 
 import com.ndungutse.tms.Utils.DBUtil;
 import com.ndungutse.tms.dot.TaskDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -9,8 +11,13 @@ import java.util.List;
 import java.util.UUID;
 
 public class TaskRepository {
+    private static final Logger logger = LoggerFactory.getLogger(TaskRepository.class);
+
     // Add New Task
     public TaskDTO save(TaskDTO taskDTO) throws SQLException, ClassNotFoundException {
+        logger.info("Saving new task: title='{}', dueDate='{}', status='{}'",
+                taskDTO.getTitle(), taskDTO.getDueDate(), taskDTO.getStatus());
+
         String sql = "INSERT INTO tasks (title, description, dueDate, status) VALUES (?, ?, ?, ?)";
 
         try (
@@ -26,45 +33,56 @@ public class TaskRepository {
             int affected = stmt.executeUpdate();
 
             if (affected == 0) {
+                logger.error("Insert failed: no rows affected for task '{}'", taskDTO.getTitle());
                 throw new SQLException("Insert failed, no rows affected.");
             }
+
             UUID generatedId = null;
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     generatedId = rs.getObject(1, UUID.class);
+                    logger.info("Task saved successfully with generated id: {}", generatedId);
+                } else {
+                    logger.warn("No generated key returned after inserting task '{}'", taskDTO.getTitle());
                 }
             }
 
             conn.commit();
             return new TaskDTO(generatedId, taskDTO.getTitle(), taskDTO.getDescription(), taskDTO.getDueDate(), taskDTO.getStatus());
+        } catch (SQLException e) {
+            logger.error("Error saving task '{}': {}", taskDTO.getTitle(), e.getMessage());
+            throw e;
         }
     }
 
     // Get All Tasks
-    public List<TaskDTO> findAll(String status,  String dueDateSortDirection) throws SQLException, ClassNotFoundException {
+    public List<TaskDTO> findAll(String status, String dueDateSortDirection) throws SQLException, ClassNotFoundException {
+        logger.info("Fetching all tasks with status filter '{}' and sort direction '{}'", status, dueDateSortDirection);
+
         List<TaskDTO> taskDTOS = new ArrayList<>();
-        boolean hasFilter = status != null && !status.isEmpty();
+        boolean hasFilter = status != null && !status.trim().isEmpty();
 
         String sql = "SELECT id, title, description, dueDate, status FROM tasks";
 
-        if (status != null && !status.trim().isEmpty()) {
+        if (hasFilter) {
             sql += " WHERE LOWER(status) = LOWER(?)";
         }
 
         String direction = "DESC";
-
         if ("ASC".equalsIgnoreCase(dueDateSortDirection)) {
-            direction= "ASC";
+            direction = "ASC";
         }
         sql += " ORDER BY dueDate " + direction;
+
+        logger.debug("Executing SQL: {}", sql);
 
         try (
                 Connection conn = DBUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
         ) {
-
             if (hasFilter) {
                 stmt.setString(1, status);
+                logger.debug("Set status parameter: {}", status);
             }
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -78,21 +96,37 @@ public class TaskRepository {
                     taskDTOS.add(taskDTO);
                 }
             }
+            logger.info("Fetched {} tasks", taskDTOS.size());
+        } catch (SQLException e) {
+            logger.error("Error fetching tasks: {}", e.getMessage());
+            throw e;
         }
         return taskDTOS;
     }
 
     // Delete Task
     public boolean deleteById(UUID id) throws SQLException, ClassNotFoundException {
+        logger.info("Deleting task with id: {}", id);
+
         String sql = "DELETE FROM tasks WHERE id = ?";
         try (
                 Connection conn = DBUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
         ) {
             stmt.setObject(1, id);
+
             int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
+
+            if (affectedRows > 0) {
+                logger.info("Task with id '{}' deleted successfully", id);
+                return true;
+            } else {
+                logger.warn("No task found with id '{}', nothing deleted", id);
+                return false;
+            }
+        } catch (SQLException e) {
+            logger.error("Error deleting task with id '{}': {}", id, e.getMessage());
+            throw e;
         }
     }
-
 }
