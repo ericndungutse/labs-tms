@@ -12,7 +12,7 @@
 <header class="bg-blue-600 text-white py-4 mb-6 shadow">
     <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
         <h1 class="text-xl font-semibold">NovaTech Task Manager</h1>
-        <button class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded text-sm">+ New Task</button>
+        <a href="${pageContext.request.contextPath}/tasks/new" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded text-sm">+ New Task</a>
     </div>
 </header>
 
