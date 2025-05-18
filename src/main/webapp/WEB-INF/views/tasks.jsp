@@ -3,8 +3,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Task Manager - /</title>
+    <meta charset="UTF-8" />
+    <title>Task Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
@@ -12,15 +12,35 @@
 <header class="bg-blue-600 text-white py-4 mb-6 shadow">
     <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
         <h1 class="text-xl font-semibold">Task Manager</h1>
-        <a href="${pageContext.request.contextPath}/tasks/new" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded text-sm">+ New Task</a>
+        <a href="${pageContext.request.contextPath}/tasks/new"
+           class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded text-sm">+ New Task</a>
     </div>
 </header>
 
 <div class="max-w-6xl mx-auto px-4">
-    <c:if test="${not empty error}">
-        <p class="text-red-500 mb-4">${error}</p>
-    </c:if>
 
+    <!-- Filters -->
+    <div class="mb-4 flex gap-4 items-center">
+        <label for="statusFilter" class="font-medium">Status:</label>
+        <select id="statusFilter" name="status"
+                class="border border-gray-300 rounded px-2 py-1"
+                onchange="applyFilters()">
+            <option value="" ${empty param.status ? 'selected' : ''}>All</option>
+            <option value="pending" ${param.status == 'pending' ? 'selected' : ''}>Pending</option>
+            <option value="completed" ${param.status == 'completed' ? 'selected' : ''}>Completed</option>
+        </select>
+
+        <label for="dueDateSort" class="font-medium">Sort by Due Date:</label>
+        <select id="dueDateSort" name="dueDateSortDirection"
+                class="border border-gray-300 rounded px-2 py-1"
+                onchange="applyFilters()">
+            <option value="" ${empty param.dueDateSortDirection ? 'selected' : ''}>None</option>
+            <option value="ASC" ${param.dueDateSortDirection == 'ASC' ? 'selected' : ''}>Ascending</option>
+            <option value="DESC" ${param.dueDateSortDirection == 'DESC' ? 'selected' : ''}>Descending</option>
+        </select>
+    </div>
+
+    <!-- Tasks Table -->
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
         <table class="w-full table-auto">
             <thead class="bg-gray-50 text-left text-sm font-medium text-gray-700">
@@ -62,6 +82,25 @@
         </table>
     </div>
 </div>
+
+<script>
+    function applyFilters() {
+        const status = document.getElementById('statusFilter').value;
+        const dueDateSortDirection = document.getElementById('dueDateSort').value;
+
+        const query = new URLSearchParams(window.location.search);
+
+        if(status)
+            query.set('status', status);
+        else query.delete('status');
+
+        if(dueDateSortDirection)
+            query.set('dueDateSortDirection', dueDateSortDirection);
+        else query.delete('dueDateSortDirection');
+
+        window.location.href =  '?' + query.toString();
+    }
+</script>
 
 </body>
 </html>
