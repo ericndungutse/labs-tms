@@ -7,6 +7,15 @@
         <servlet-name>TaskApi</servlet-name>
         <servlet-class>com.ndungutse.tms.controller.TaskApiController</servlet-class>
     </servlet>
+<!--    <servlet>-->
+<!--        <servlet-name>TaskWeb</servlet-name>-->
+<!--        <servlet-class>com.ndungutse.tms.controller.TaskWebController</servlet-class>-->
+<!--    </servlet>-->
+    
+<!--    <servlet-mapping>-->
+<!--        <servlet-name>TaskWeb</servlet-name>-->
+<!--        <url-pattern>/tasks</url-pattern>-->
+<!--    </servlet-mapping>-->
     <servlet-mapping>
         <servlet-name>TaskApi</servlet-name>
         <url-pattern>/api/v1/tasks</url-pattern>
