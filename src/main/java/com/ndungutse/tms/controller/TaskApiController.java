@@ -1,12 +1,16 @@
 package com.ndungutse.tms.controller;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
 import com.ndungutse.tms.Utils.TaskJsonMapper;
 import com.ndungutse.tms.dot.AllTasksResponse;
 import com.ndungutse.tms.dot.TaskDTO;
+import com.ndungutse.tms.exception.InvalidTaskException;
+import com.ndungutse.tms.exception.MissingParameterException;
+import com.ndungutse.tms.exception.TaskNotFoundException;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import com.ndungutse.tms.repository.TaskRepository;
@@ -23,7 +27,6 @@ public class TaskApiController extends HttpServlet {
     public void init() {
         logger.info("TaskApiController initialized");
     }
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String status = request.getParameter("status");
@@ -39,14 +42,15 @@ public class TaskApiController extends HttpServlet {
             response.getWriter().write(jsonResponse);
             logger.info("GET request processed successfully, returned {} tasks", taskDTOS.size());
         } catch (Exception e) {
+            response.setContentType("application/json");
             logger.error("Error processing GET request", e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+            response.getWriter().write("{\"error\": Internal server error. Please try again later. \"}");
         }
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try (BufferedReader reader = request.getReader()) {
             StringBuilder sb = new StringBuilder();
             String line;
@@ -63,14 +67,16 @@ public class TaskApiController extends HttpServlet {
             response.getWriter().write(TaskJsonMapper.toJson(newTaskDTO));
             logger.info("Task created successfully with ID: {}", newTaskDTO.getId());
 
-        } catch (Exception e) {
-            logger.error("Error processing POST request", e);
+        }catch (InvalidTaskException e) {
+            response.setContentType("application/json");
+            logger.warn("Invalid task", e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            try {
-                response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
-            } catch (IOException ioException) {
-                logger.error("Error writing error response for POST", ioException);
-            }
+            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+        } catch (SQLException | ClassNotFoundException e) {
+            response.setContentType("application/json");
+            logger.error("Error processing POST request", e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\": \"Internal server error. Please try again later.\"}");
         }
     }
 
@@ -78,11 +84,11 @@ public class TaskApiController extends HttpServlet {
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json");
         String idParam = request.getParameter("id");
-
-        // Extract ID from path info: /api/tasks?id=
         if (idParam == null || idParam.equals("/")) {
+            response.setContentType("application/json");
+            logger.warn("Missing task ID in the URL. Task ID is required in the URL to update a task.");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\": \"Task ID is required in the URL\"}");
+            response.getWriter().write("{\"error\":\" Task ID is required \"}");
             return;
         }
 
@@ -90,6 +96,8 @@ public class TaskApiController extends HttpServlet {
         try {
             id = UUID.fromString(idParam);
         } catch (IllegalArgumentException e) {
+            response.setContentType("application/json");
+            logger.warn("Invalid UUID format in the URL. Task ID must be a valid UUID.");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("{\"error\": \"Invalid UUID format\"}");
             return;
@@ -110,13 +118,23 @@ public class TaskApiController extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().write(TaskJsonMapper.toJson(updatedTask));
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        }catch (TaskNotFoundException e){
+            response.setContentType("application/json");
+           logger.warn("Task not found for ID: {}", id);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+        }catch (InvalidTaskException e) {
+            response.setContentType("application/json");
+            logger.error("Error processing PUT request for id: {}", idParam, e);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+        }catch (Exception e) {
+            response.setContentType("application/json");
+            logger.error("Error processing PUT request for id: {}", idParam, e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\": \" Internal server error. Please try again later. \"}");
         }
     }
-
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -124,9 +142,10 @@ public class TaskApiController extends HttpServlet {
         logger.info("Received DELETE request for id={}", idParam);
 
         if (idParam == null || idParam.isEmpty()) {
-            logger.warn("DELETE request missing task ID");
+            response.setContentType("application/json");
+            logger.warn("Id of task is required in the URL");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\":\"Missing task ID\"}");
+            response.getWriter().write("{\"error\":\" Task ID is required in the URL\"}");
             return;
         }
 
@@ -142,14 +161,17 @@ public class TaskApiController extends HttpServlet {
                 response.getWriter().write("{\"error\":\"Task not found\"}");
                 logger.warn("Task with ID {} not found for deletion", taskId);
             }
-        } catch (IllegalArgumentException e) {
-            logger.warn("Invalid UUID format for id: {}", idParam);
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\":\"Invalid UUID format\"}");
-        } catch (Exception e) {
+        }catch(TaskNotFoundException e){
+            response.setContentType("application/json");
+            logger.info("Task with ID {} not found for deletion", idParam);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("{\"error\":\""+ e.getMessage() +"\"}");
+
+        }catch (Exception e) {
+            response.setContentType("application/json");
             logger.error("Error processing DELETE request for id: " + idParam, e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+            response.getWriter().write("{\"error\":\" Internal server error. Please try again later.\"}");
         }
     }
 
