@@ -18,7 +18,7 @@
 <div class="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-8">
     <h2 class="text-xl font-semibold text-gray-800 mb-6">Add New Task</h2>
 
-    <form action="add-task" method="post">
+    <form action="new" method="post">
         <div class="mb-4">
             <label for="title" class="block text-gray-700 font-medium mb-2">Task Title</label>
             <input type="text" id="title" name="title" class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" required>
