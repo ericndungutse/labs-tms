@@ -21,10 +21,9 @@ public class TaskRepository {
         String sql = "INSERT INTO tasks (title, description, dueDate, status) VALUES (?, ?, ?, ?)";
 
         try (
-                Connection conn = DBUtil.getConnection();
+                Connection conn = DBUtil.getConnection(); // auto-commit is true by default
                 PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
         ) {
-            conn.setAutoCommit(false);
             stmt.setString(1, taskDTO.getTitle());
             stmt.setString(2, taskDTO.getDescription());
             stmt.setDate(3, Date.valueOf(taskDTO.getDueDate()));
@@ -47,13 +46,14 @@ public class TaskRepository {
                 }
             }
 
-            conn.commit();
             return new TaskDTO(generatedId, taskDTO.getTitle(), taskDTO.getDescription(), taskDTO.getDueDate(), taskDTO.getStatus());
+
         } catch (SQLException e) {
             logger.error("Error saving task '{}': {}", taskDTO.getTitle(), e.getMessage());
             throw e;
         }
     }
+
 
     // Get All Tasks
     public List<TaskDTO> findAll(String status, String dueDateSortDirection) throws SQLException, ClassNotFoundException {
