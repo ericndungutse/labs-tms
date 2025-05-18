@@ -1,7 +1,6 @@
 package com.ndungutse.tms.repository;
 
 import com.ndungutse.tms.Utils.DBUtil;
-import com.ndungutse.tms.Utils.TaskJsonMapper;
 import com.ndungutse.tms.dot.TaskDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
