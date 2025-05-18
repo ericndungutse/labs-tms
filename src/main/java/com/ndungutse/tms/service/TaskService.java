@@ -2,34 +2,43 @@ package com.ndungutse.tms.service;
 
 import com.ndungutse.tms.dot.TaskDTO;
 import com.ndungutse.tms.repository.TaskRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
 
 public class TaskService {
+    private static final Logger logger = LoggerFactory.getLogger(TaskService.class);
     private final TaskRepository taskRepository;
 
-    // Opt dependency injection. Support unit testing via mocking and make it so service can work with any repository.
-    // It allows you to pass a mock or fake version of TaskRepository when testing TaskService, without depending on the real database.
-    // Implement OpenCLose Principle
     public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
 
     public TaskDTO createTask(TaskDTO taskDTO) throws Exception {
         if (taskDTO.getTitle() == null || taskDTO.getTitle().isBlank()) {
+            logger.warn("Attempted to create task with empty title");
             throw new IllegalArgumentException("Title cannot be empty");
         }
-        return taskRepository.save(taskDTO);
+        TaskDTO created = taskRepository.save(taskDTO);
+        logger.info("Task created with ID: {}", created.getId());
+        return created;
     }
 
-    // Get All Tasks
     public List<TaskDTO> getAllTasks(String status, String dueDateSortDirection) throws Exception {
+        logger.debug("Fetching tasks with status={} and dueDateSortDirection={}", status, dueDateSortDirection);
         return taskRepository.findAll(status, dueDateSortDirection);
     }
 
-    // Delete task
     public boolean deleteTaskById(UUID id) throws Exception {
-        return taskRepository.deleteById(id);
+        logger.info("Deleting task with ID: {}", id);
+        boolean deleted = taskRepository.deleteById(id);
+        if (deleted) {
+            logger.info("Task with ID {} deleted successfully", id);
+        } else {
+            logger.warn("No task found with ID {} to delete", id);
+        }
+        return deleted;
     }
 }

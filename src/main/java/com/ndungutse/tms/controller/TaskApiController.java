@@ -12,66 +12,82 @@ import jakarta.servlet.annotation.*;
 import com.ndungutse.tms.repository.TaskRepository;
 import com.ndungutse.tms.service.TaskService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @WebServlet(name = "TaskApi", value = "/api/v1/tasks")
 public class TaskApiController extends HttpServlet {
- private final TaskService taskService = new TaskService(new TaskRepository());
+    private static final Logger logger = LoggerFactory.getLogger(TaskApiController.class);
+    private final TaskService taskService = new TaskService(new TaskRepository());
 
-    public void init() {}
+    public void init() {
+        logger.info("TaskApiController initialized");
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try {
-            // Get optional status parameter from query string
-            String status = request.getParameter("status");
-            String dueDateSortDirection = request.getParameter("dueDateSortDirection");
-            List<TaskDTO> taskDTOS = taskService.getAllTasks(status, dueDateSortDirection);
+        String status = request.getParameter("status");
+        String dueDateSortDirection = request.getParameter("dueDateSortDirection");
+        logger.info("Received GET request with status={} and dueDateSortDirection={}", status, dueDateSortDirection);
 
+        try {
+            List<TaskDTO> taskDTOS = taskService.getAllTasks(status, dueDateSortDirection);
             AllTasksResponse responseObj = new AllTasksResponse(new AllTasksResponse.Data(taskDTOS), "success");
             String jsonResponse = TaskJsonMapper.toJsonFromResponse(responseObj);
 
             response.setContentType("application/json");
             response.getWriter().write(jsonResponse);
+            logger.info("GET request processed successfully, returned {} tasks", taskDTOS.size());
         } catch (Exception e) {
+            logger.error("Error processing GET request", e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
         }
     }
 
-
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)  {
-        try(BufferedReader reader = request.getReader()) {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+        try (BufferedReader reader = request.getReader()) {
             StringBuilder sb = new StringBuilder();
             String line;
-
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
             }
             String json = sb.toString();
+            logger.info("Received POST request with body: {}", json);
+
             TaskDTO newTaskDTO = taskService.createTask(TaskJsonMapper.fromJson(json));
 
             response.setContentType("application/json");
             response.setStatus(HttpServletResponse.SC_CREATED);
             response.getWriter().write(TaskJsonMapper.toJson(newTaskDTO));
+            logger.info("Task created successfully with ID: {}", newTaskDTO.getId());
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error processing POST request", e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            try {
+                response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+            } catch (IOException ioException) {
+                logger.error("Error writing error response for POST", ioException);
+            }
         }
     }
 
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        logger.info("Received PUT request - currently not implemented");
         response.setContentType("application/json");
         response.getWriter().write("{ \"message\": \"Task updated\" }");
     }
 
-
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        System.out.println("********************** Delete Here");
         String idParam = request.getParameter("id");
+        logger.info("Received DELETE request for id={}", idParam);
+
         if (idParam == null || idParam.isEmpty()) {
+            logger.warn("DELETE request missing task ID");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("{\"error\":\"Missing task ID\"}");
             return;
@@ -83,20 +99,24 @@ public class TaskApiController extends HttpServlet {
 
             if (deleted) {
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                logger.info("Task with ID {} deleted successfully", taskId);
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 response.getWriter().write("{\"error\":\"Task not found\"}");
+                logger.warn("Task with ID {} not found for deletion", taskId);
             }
         } catch (IllegalArgumentException e) {
+            logger.warn("Invalid UUID format for id: {}", idParam);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("{\"error\":\"Invalid UUID format\"}");
         } catch (Exception e) {
+            logger.error("Error processing DELETE request for id: " + idParam, e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
         }
     }
 
-
     public void destroy() {
+        logger.info("TaskApiController destroyed");
     }
 }
