@@ -49,11 +49,11 @@
                         </c:choose>
                     </td>
                     <td class="px-4 py-3 flex gap-2">
-                        <form method="get" action="editTask">
+                        <form method="get" action="edit-task">
                             <input type="hidden" name="id" value="${task.id}" />
                             <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 rounded">Edit</button>
                         </form>
-                        <form method="post" action="deleteTask" onsubmit="return confirm('Are you sure you want to delete this task?');">
+                        <form method="post" action="delete-task" onsubmit="return confirm('Are you sure you want to delete this task?');">
                             <input type="hidden" name="id" value="${task.id}" />
                             <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded">Delete</button>
                         </form>

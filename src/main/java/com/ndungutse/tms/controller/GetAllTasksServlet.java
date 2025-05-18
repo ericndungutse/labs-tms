@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.List;
 
 @WebServlet(name = "TaskWeb", urlPatterns = {"/"})
-public class TaskWebController extends HttpServlet {
+public class GetAllTasksServlet extends HttpServlet {
     private final TaskService taskService = new TaskService(new TaskRepository());
 
     @Override
