@@ -27,8 +27,6 @@ public class TaskApiController extends HttpServlet {
     public void init() {
         logger.info("TaskApiController initialized");
     }
-
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String status = request.getParameter("status");
@@ -53,7 +51,6 @@ public class TaskApiController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
         try (BufferedReader reader = request.getReader()) {
             StringBuilder sb = new StringBuilder();
             String line;
@@ -87,11 +84,11 @@ public class TaskApiController extends HttpServlet {
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json");
         String idParam = request.getParameter("id");
-
-        // Extract ID from path info: /api/tasks?id=
         if (idParam == null || idParam.equals("/")) {
+            response.setContentType("application/json");
+            logger.warn("Missing task ID in the URL. Task ID is required in the URL to update a task.");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\": \"Task ID is required in the URL\"}");
+            response.getWriter().write("{\"error\":\" Task ID is required \"}");
             return;
         }
 
@@ -99,6 +96,8 @@ public class TaskApiController extends HttpServlet {
         try {
             id = UUID.fromString(idParam);
         } catch (IllegalArgumentException e) {
+            response.setContentType("application/json");
+            logger.warn("Invalid UUID format in the URL. Task ID must be a valid UUID.");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("{\"error\": \"Invalid UUID format\"}");
             return;
@@ -119,13 +118,23 @@ public class TaskApiController extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().write(TaskJsonMapper.toJson(updatedTask));
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        }catch (TaskNotFoundException e){
+            response.setContentType("application/json");
+           logger.warn("Task not found for ID: {}", id);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+        }catch (InvalidTaskException e) {
+            response.setContentType("application/json");
+            logger.error("Error processing PUT request for id: {}", idParam, e);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+        }catch (Exception e) {
+            response.setContentType("application/json");
+            logger.error("Error processing PUT request for id: {}", idParam, e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\": \" Internal server error. Please try again later. \"}");
         }
     }
-
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {

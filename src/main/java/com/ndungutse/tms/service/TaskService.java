@@ -70,7 +70,29 @@ public class TaskService {
     // TaskService.java
     public TaskDTO updateTask(UUID id, TaskDTO taskDTO) throws Exception {
         if (taskDTO.getTitle() == null || taskDTO.getTitle().isBlank()) {
-            throw new IllegalArgumentException("Title cannot be empty");
+            logger.warn("Attempted to update task with empty title");
+            throw new InvalidTaskException("Title cannot be empty");
+        }
+
+        if(taskDTO.getDueDate() == null) {
+            logger.warn("Attempted to update task with empty due date");
+            throw new InvalidTaskException("Due date cannot be empty");
+        }
+
+        if(taskDTO.getStatus() == null || taskDTO.getStatus().isBlank() || !taskDTO.getStatus().equalsIgnoreCase("completed") && !taskDTO.getStatus().equalsIgnoreCase("pending")) {
+            logger.warn("Attempted to update task with empty status");
+            throw new InvalidTaskException("Status cannot be empty and can only be completed or pending");
+        }
+
+        if(taskDTO.getDescription() == null || taskDTO.getDescription().isBlank()) {
+            logger.warn("Attempted to update task with empty description");
+            throw new InvalidTaskException("Description cannot be empty");
+        }
+
+        TaskDTO existingTask = taskRepository.findById(id);
+        if (existingTask == null) {
+            logger.warn("Task not found for ID: {}", id);
+            throw new TaskNotFoundException("Task not found for ID " + id);
         }
         return taskRepository.update(id, taskDTO);
     }
