@@ -158,4 +158,22 @@ public class TaskRepository {
         }
     }
 
+    public TaskDTO findById(UUID taskId )throws Exception, SQLException, ClassNotFoundException {
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM tasks WHERE id = ?")) {
+            stmt.setObject(1, taskId, java.sql.Types.OTHER);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new TaskDTO(
+                            (UUID) rs.getObject("id"),
+                            rs.getString("title"),
+                            rs.getString("description"),
+                            rs.getDate("dueDate").toLocalDate(),
+                            rs.getString("status")
+                    );
+                }
+            }
+        }
+        return null;
+    }
 }

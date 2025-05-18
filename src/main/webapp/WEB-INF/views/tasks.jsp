@@ -4,14 +4,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NovaTech Task Manager - Dashboard</title>
+    <title> Task Manager - /</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
 
 <header class="bg-blue-600 text-white py-4 mb-6 shadow">
     <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
-        <h1 class="text-xl font-semibold">NovaTech Task Manager</h1>
+        <h1 class="text-xl font-semibold"> Task Manager</h1>
         <a href="${pageContext.request.contextPath}/tasks/new" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded text-sm">+ New Task</a>
     </div>
 </header>
@@ -36,7 +36,7 @@
             <c:forEach var="task" items="${tasks}">
                 <tr>
                     <td class="px-4 py-3">${task.title}</td>
-                    <td class="px-4 py-3">${task.description}</td>
+                    <td class="px-4 py-3 max-w-[200px] truncate overflow-hidden whitespace-nowrap">${task.description}</td>
                     <td class="px-4 py-3">${task.dueDate}</td>
                     <td class="px-4 py-3">
                         <c:choose>
@@ -49,10 +49,7 @@
                         </c:choose>
                     </td>
                     <td class="px-4 py-3 flex gap-2">
-                        <form method="get" action="edit-task">
-                            <input type="hidden" name="id" value="${task.id}" />
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 rounded">Edit</button>
-                        </form>
+                        <a href="${pageContext.request.contextPath}/edit-task?id=${task.id}"  class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 rounded">Edit</a>
                         <form method="post" action="delete-task" onsubmit="return confirm('Are you sure you want to delete this task?');">
                             <input type="hidden" name="id" value="${task.id}" />
                             <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded">Delete</button>

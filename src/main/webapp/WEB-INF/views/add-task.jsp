@@ -3,15 +3,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NovaTech Task Manager - Add Task</title>
+    <title> Task Manager - Add Task</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
 
 <header class="bg-blue-600 text-white py-4 mb-6 shadow">
     <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
-        <h1 class="text-xl font-semibold">NovaTech Task Manager</h1>
-        <a href="dashboard.jsp" class="text-white text-sm hover:underline">&larr; Back to Tasks</a>
+        <h1 class="text-xl font-semibold"> Task Manager</h1>
+        <a href="/" class="text-white text-sm hover:underline">&larr; Back to Tasks</a>
     </div>
 </header>
 
@@ -43,7 +43,7 @@
         </div>
 
         <div class="flex justify-end gap-3">
-            <a href="dashboard.jsp" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Cancel</a>
+            <a href="/" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Cancel</a>
             <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Save Task</button>
         </div>
     </form>

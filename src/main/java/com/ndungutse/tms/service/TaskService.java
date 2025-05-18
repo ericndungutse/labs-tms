@@ -51,4 +51,12 @@ public class TaskService {
     }
 
 
+    public TaskDTO getTaskById(UUID taskId) {
+        try {
+            return taskRepository.findById(taskId);
+        } catch (Exception e) {
+            logger.error("Error fetching task by ID: {}", taskId, e);
+            return null;
+        }
+    }
 }
