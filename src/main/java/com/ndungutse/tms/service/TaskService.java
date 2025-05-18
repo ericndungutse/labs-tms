@@ -41,4 +41,14 @@ public class TaskService {
         }
         return deleted;
     }
+
+    // TaskService.java
+    public TaskDTO updateTask(UUID id, TaskDTO taskDTO) throws Exception {
+        if (taskDTO.getTitle() == null || taskDTO.getTitle().isBlank()) {
+            throw new IllegalArgumentException("Title cannot be empty");
+        }
+        return taskRepository.update(id, taskDTO);
+    }
+
+
 }

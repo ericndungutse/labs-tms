@@ -1,6 +1,7 @@
 package com.ndungutse.tms.repository;
 
 import com.ndungutse.tms.Utils.DBUtil;
+import com.ndungutse.tms.Utils.TaskJsonMapper;
 import com.ndungutse.tms.dot.TaskDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,4 +130,33 @@ public class TaskRepository {
             throw e;
         }
     }
+
+    // TaskRepository.java
+    public TaskDTO update(UUID id, TaskDTO taskDTO) throws Exception {
+        String sql = "UPDATE tasks SET title = ?, description = ?, dueDate = ?, status = ? WHERE id = ? RETURNING *";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, taskDTO.getTitle());
+            stmt.setString(2, taskDTO.getDescription());
+            stmt.setObject(3, taskDTO.getDueDate());
+            stmt.setString(4, taskDTO.getStatus());
+            stmt.setObject(5, id);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new TaskDTO(
+                            (UUID) rs.getObject("id"),
+                            rs.getString("title"),
+                            rs.getString("description"),
+                            rs.getDate("dueDate").toLocalDate(),
+                            rs.getString("status")
+                    );
+                } else {
+                    throw new Exception("Task not found");
+                }
+            }
+        }
+    }
+
 }

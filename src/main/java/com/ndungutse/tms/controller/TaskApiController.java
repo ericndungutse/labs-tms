@@ -76,10 +76,47 @@ public class TaskApiController extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        logger.info("Received PUT request - currently not implemented");
         response.setContentType("application/json");
-        response.getWriter().write("{ \"message\": \"Task updated\" }");
+        String idParam = request.getParameter("id");
+
+        // Extract ID from path info: /api/tasks?id=
+        if (idParam == null || idParam.equals("/")) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"Task ID is required in the URL\"}");
+            return;
+        }
+
+        UUID id;
+        try {
+            id = UUID.fromString(idParam);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"Invalid UUID format\"}");
+            return;
+        }
+
+        try (BufferedReader reader = request.getReader()) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+
+            String json = sb.toString();
+            TaskDTO dtoFromBody = TaskJsonMapper.fromJson(json);
+
+            TaskDTO updatedTask = taskService.updateTask(id, dtoFromBody);
+
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().write(TaskJsonMapper.toJson(updatedTask));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+        }
     }
+
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
