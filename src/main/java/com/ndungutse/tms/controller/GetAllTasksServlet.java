@@ -19,9 +19,15 @@ public class GetAllTasksServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        String status = request.getParameter("status");
+        String dueDateSortDirection = request.getParameter("dueDateSortDirection");
+
+        System.out.println("************************** " +  status + " ******************* " + dueDateSortDirection);
+
+
         try {
-            List<TaskDTO> tasks = taskService.getAllTasks(null, null);
-            System.out.println(tasks);
+            List<TaskDTO> tasks = taskService.getAllTasks(status, dueDateSortDirection);
             request.setAttribute("tasks", tasks);
             request.getRequestDispatcher("/WEB-INF/views/tasks.jsp").forward(request, response);
 

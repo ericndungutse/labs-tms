@@ -68,14 +68,15 @@ public class TaskRepository {
             sql += " WHERE LOWER(status) = LOWER(?)";
         }
 
-        String direction = "DESC";
-        if ("ASC".equalsIgnoreCase(dueDateSortDirection)) {
-            direction = "ASC";
+        String direction = null;
+
+        if(dueDateSortDirection != null){
+            if ("ASC".equalsIgnoreCase(dueDateSortDirection)) direction = "ASC";
+            if ("DESC".equalsIgnoreCase(dueDateSortDirection)) direction = "DESC";
+            sql += " ORDER BY dueDate " + direction;
         }
-        sql += " ORDER BY dueDate " + direction;
 
         logger.debug("Executing SQL: {}", sql);
-
         try (
                 Connection conn = DBUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
