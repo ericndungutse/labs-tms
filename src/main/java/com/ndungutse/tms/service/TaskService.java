@@ -1,6 +1,7 @@
 package com.ndungutse.tms.service;
 
 import com.ndungutse.tms.dot.TaskDTO;
+import com.ndungutse.tms.exception.InvalidTaskException;
 import com.ndungutse.tms.repository.TaskRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +21,24 @@ public class TaskService {
     public TaskDTO createTask(TaskDTO taskDTO) throws SQLException, ClassNotFoundException {
         if (taskDTO.getTitle() == null || taskDTO.getTitle().isBlank()) {
             logger.warn("Attempted to create task with empty title");
-            throw new IllegalArgumentException("Title cannot be empty");
+            throw new InvalidTaskException("Title cannot be empty");
         }
+
+        if(taskDTO.getDueDate() == null) {
+            logger.warn("Attempted to create task with empty due date");
+            throw new InvalidTaskException("Due date cannot be empty");
+        }
+
+        if(taskDTO.getStatus() == null || taskDTO.getStatus().isBlank() || !taskDTO.getStatus().equalsIgnoreCase("completed") && !taskDTO.getStatus().equalsIgnoreCase("pending")) {
+            logger.warn("Attempted to create task with empty status");
+            throw new InvalidTaskException("Status cannot be empty and can only be completed or pending");
+        }
+
+        if(taskDTO.getDescription() == null || taskDTO.getDescription().isBlank()) {
+            logger.warn("Attempted to create task with empty description");
+            throw new InvalidTaskException("Description cannot be empty");
+        }
+
         TaskDTO created = taskRepository.save(taskDTO);
         logger.info("Task created with ID: {}", created.getId());
         return created;

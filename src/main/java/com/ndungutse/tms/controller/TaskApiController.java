@@ -8,6 +8,7 @@ import java.util.UUID;
 import com.ndungutse.tms.Utils.TaskJsonMapper;
 import com.ndungutse.tms.dot.AllTasksResponse;
 import com.ndungutse.tms.dot.TaskDTO;
+import com.ndungutse.tms.exception.InvalidTaskException;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import com.ndungutse.tms.repository.TaskRepository;
@@ -49,6 +50,7 @@ public class TaskApiController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
         try (BufferedReader reader = request.getReader()) {
             StringBuilder sb = new StringBuilder();
             String line;
@@ -65,7 +67,13 @@ public class TaskApiController extends HttpServlet {
             response.getWriter().write(TaskJsonMapper.toJson(newTaskDTO));
             logger.info("Task created successfully with ID: {}", newTaskDTO.getId());
 
-        } catch (Exception e) {
+        }catch (InvalidTaskException e) {
+            response.setContentType("application/json");
+            logger.warn("Invalid task", e);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+        } catch (SQLException | ClassNotFoundException e) {
+            response.setContentType("application/json");
             logger.error("Error processing POST request", e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"error\": \"Internal server error. Please try again later.\"}");
