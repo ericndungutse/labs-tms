@@ -93,9 +93,6 @@ public class TaskRepository {
                 }
             }
             logger.info("Fetched {} tasks", taskDTOS.size());
-        } catch (SQLException e) {
-            logger.error("Error fetching tasks: {}", e.getMessage());
-            throw e;
         }
         return taskDTOS;
     }
@@ -120,9 +117,6 @@ public class TaskRepository {
                 logger.warn("No task found with id '{}', nothing deleted", id);
                 return false;
             }
-        } catch (SQLException e) {
-            logger.error("Error deleting task with id '{}': {}", id, e.getMessage());
-            throw e;
         }
     }
 
